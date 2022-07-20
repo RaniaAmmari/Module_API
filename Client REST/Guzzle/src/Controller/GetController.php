@@ -37,7 +37,7 @@ return $this->render('get.html.twig', [
 /**
      * @Route("/ajout", name="app_ajout_poste")
      */
-    public function ajout(): Response
+    public function add(): Response
     {
         $client = new Client([
             // Base URI is used with relative requests
@@ -64,6 +64,29 @@ return $this->render('get.html.twig', [
                 'post' => $arr_body]);
         }
 }
+/**
+     * @Route("/patch", name="app_patch_poste")
+     */
+    public function modifie() : Response
+    {
+$client = new Client([
+    'base_uri' => 'https://jsonplaceholder.typicode.com',
+]);
+  
+$response = $client->request('PATCH', '/posts/1', [
+    'json' => [
+        'title' => 'This title suits me very well',
+    ]
+]);
+if (200 == $response->getStatusCode()) { 
+$body = $response->getBody();
+$arr_body = json_decode($body);
+echo ($response->getStatusCode());
+// print_r($arr_body);
+return $this->render('modif.html.twig',[
+    'modif' => $arr_body]);}
+}
+
 /**
      * @Route("/delete", name="app_delete_poste")
      */

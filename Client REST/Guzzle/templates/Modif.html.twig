@@ -1,0 +1,22 @@
+{% extends 'base.html.twig' %}
+{% block body %}
+<style>
+    .example-wrapper { width: 80%; margin:auto; display:flex; flex-direction:column; gap:20px  }
+</style>
+<div class="container" >
+<div class="example-wrapper" >
+<h1>La liste des actualitées Talan:</h1>
+
+<div class="card" style="width: 100%;">
+  <div class="card-body">
+
+   <h3> <li class="card-title">{{modif.title}}</li></h3>
+   <p class="card-text">User Id:{{modif.userId}}</p>
+      <p class="card-text"> Id :{{modif.id}}</p>
+    <p class="card-text">{{modif.body}}</p>
+    
+  </div>
+</div>
+
+</div>
+{% endblock %}
