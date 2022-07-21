@@ -9,12 +9,10 @@
 {% for item in postes %}
 <div class="card" style="width: 100%;">
   <div class="card-body">
-
    <h3> <li class="card-title">{{item.title}}</li></h3>
-    <p class="card-text">user id:{{item.userId}}</p>
-      <p class="card-text"> id :{{item.id}}</p>
-
-    <p class="card-text">{{item.body}}</p>
+    <p class="card-text">{{item.content}}</p>
+    <p class="card-text"> {{item.autor}}</p>
+    <p class="card-text"> {{item.date}}</p>
   </div>
 </div>
 {% endfor %}

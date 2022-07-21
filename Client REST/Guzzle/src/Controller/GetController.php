@@ -19,15 +19,15 @@ class GetController extends AbstractController
   
 $client = new Client([
     // Base URI is used with relative requests
-    'base_uri' => 'https://jsonplaceholder.typicode.com',
+    'base_uri' => 'http://127.0.0.1:8000/',
 ]);
   
-$response = $client->request('GET', '/posts');
+$response = $client->request('GET', '/article');
 if (200 == $response->getStatusCode()) { 
 $body = $response->getBody();
 $arr_body = json_decode($body);
 // echo "<pre>"; print_r($arr_body);echo "<pre>";
-var_dump ($response->getStatusCode());
+// var_dump ($response->getStatusCode());
 return $this->render('get.html.twig', [
     'controller_name' => 'GetController',
         'postes' => $arr_body
@@ -41,15 +41,17 @@ return $this->render('get.html.twig', [
     {
         $client = new Client([
             // Base URI is used with relative requests
-            'base_uri' => 'https://jsonplaceholder.typicode.com',
+            'base_uri' => 'http://127.0.0.1:8000/',
         ]);
           
-        $response = $client->request('Post', '/posts', [
+        $response = $client->request('Post', '/article', [
             'json' => [
-                 'userId'=> 2,
-                    'id'=> 100,
+                 
                     'title'=> 'autem hic labore sunt dolores incidunt',
-                    'body'=>'enim et ex nulla\nomnis voluptas quia qui\nvoluptatem consequatur numquam aliquam sunt\ntotam recusandae id dignissimos aut sed asperiores deserunt'
+                    'body'=>'enim et ex nulla\nomnis voluptas quia qui\nvoluptatem consequatur numquam aliquam sunt\ntotam recusandae id dignissimos aut sed asperiores deserunt',
+                    'autor'=> 'autem  incidunt',
+                    'date'=> '2022-07-21T18:03:46+02:00',
+
                   
             ]
         ]);
