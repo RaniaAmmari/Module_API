@@ -29,10 +29,10 @@ class ApiPostController extends AbstractController
      * 
      */
     public function index(ArticleRepository $ArticleRepository , SerializerInterface $serializer)
-    {
+    { 
+
         return   $this->json($ArticleRepository->findAll(),200 ,[]);
-       
-      
+
     }
     /**
      * @GET("/article/{id}", name="app_api_article", requirements = {"id"="\d+"})
