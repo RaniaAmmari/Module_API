@@ -20,42 +20,72 @@ use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Serializer\Exception\NotEncodableValueException;
+use FOS\RestBundle\Controller\Annotations as Rest;
+
+
+/**
+* @Rest\Route("/api/article")
+*/
 
 class ApiPostController extends AbstractController
 {
     /**
-     * @GET("/article", name="app_api_index")
-     * 
+     *  @Rest\Get("/")
      */
     public function index(ArticleRepository $ArticleRepository , SerializerInterface $serializer)
     { 
 
-        return   $this->json($ArticleRepository->findAll(),200 ,[]);
+        return   $this->json($ArticleRepository->findAll(),200 ,[],['groups'=>'article']);
 
     }
     /**
-     * @GET("/article/{id}", name="app_api_article", requirements = {"id"="\d+"})
+     * @Rest\Get("/{id}", name="app_api_article", requirements = {"id"="\d+"})
      */
     public function articleId(ArticleRepository $ArticleRepository , SerializerInterface $serializer, int $id)
     
         {
-            try
-            {
-            return   $this->json($ArticleRepository->find($id), 200 ,[]);
-        } catch (NotEncodableValueException $e) {
+           if ($ArticleRepository->find($id) == true){
+            return   $this->json($ArticleRepository->find($id), 200 ,[],['groups'=>'article']);
+        } else {
            return $this->json ([
             'status' => 404,
-           'message' => $e ->getMessage()
-           ], 404 ,"l'Id est non trouvé");
+           'message'=> 'article non existant'
+           ], 404 );
         }
       
     }
+/**
+ *  @Rest\Put("{?id}"}
+ */
+public function editArticle( ?Article $article, Request $request ,ManagerRegistry $doctrine)
+{
+    $donnees = json_decode($request->getContent());
 
-    /**
+       
+    if(!$article)
+        {
+            $article = new Article();
+            $code=200;
+        }
+        {
+        $article->setTitle($donnees->title);
 
- * @POST("/article", name="ajout")
+        $article->setContent($donnees->content);
 
+        $article->setAutor($donnees->autor);
+
+        $article ->setDate(new \DateTime()); 
+
+        $entityManager = $this->getDoctrine()->getManager();
+        $entityManager->persist($article);
+        $entityManager->flush();
+        return $this->json($article,201,[]);
+    } 
+
+}
+
+/**
+ * @POST("/api/article" name="app_post_user")
  */
 
 public function addArticle(Request $request,ManagerRegistry $doctrine)
@@ -81,50 +111,24 @@ public function addArticle(Request $request,ManagerRegistry $doctrine)
         return $this->json($article,201,[]);
 
 }
+
 /**
- * @Put("/article/{?id}", name="edit")
- */
-public function editArticle( ?Article $article, Request $request ,ManagerRegistry $doctrine)
-{
-    $donnees = json_decode($request->getContent());
-
-       
-        if(!$article){
-            $article = new Article();
-            $code = 201;
-        }
-        else{
-        $article->setTitle($donnees->title);
-
-        $article->setContent($donnees->content);
-
-        $article->setAutor($donnees->autor);
-
-        $article ->setDate(new \DateTime());  
-
-        $entityManager = $this->getDoctrine()->getManager();
-        $entityManager->persist($article);
-        $entityManager->flush();
-        return $this->json($article,201,[]);} 
-
-}
-/**
- * @GET("/articles", name="find")
+ *  @Rest\Get("/trois")
  */
 public function find(ArticleRepository $ArticleRepository)
 {
-    return   $this->json($ArticleRepository->findBylast(),200 ,[]);
+    return   $this->json($ArticleRepository->findBylast(),200 ,[],['groups'=>'article']);
 
 }
 /**
- * @Delete("/article/{id}", name="delete")
+ *@Rest\Delete("/{id}")
  */
 public function remove(Article $article)
 {
     $entityManager = $this->getDoctrine()->getManager();
     $entityManager->remove($article);
     $entityManager->flush();
-    return $this->json($article,200,[]); 
+    return $this->json($article,200,[],['groups'=>'article']); 
 }
 
 }

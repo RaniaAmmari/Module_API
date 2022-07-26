@@ -19,11 +19,18 @@ use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Security\Core\User\PasswordUpgraderInterface;
 use Symfony\Component\Serializer\Exception\NotEncodableValueException;
+use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 
 class UserController extends AbstractController
+
 {
+    private $passwordEncoder;
+    public function __construct(UserPasswordEncoderInterface $passwordEncoder)
+    {
+        $this->passwordEncoder = $passwordEncoder;
+    }
+
     /**
      * @GET("/user", name="get_user")
      * 
@@ -31,26 +38,24 @@ class UserController extends AbstractController
     public function index(UserRepository $userRepository , SerializerInterface $serializer)
     { 
 
-        return   $this->json($UserRepository->findAll(),200 ,[]);
+        return   $this->json($userRepository->findAll(),200 ,[]);
 
     }
      /**
-
- * @POST("/user", name="ajout")
-
+  * @POST("/user", name="ajout_user")
  */
 
-public function addUser(Request $request, ManagerRegistry $doctrine , PasswordUpgraderInterface  $password)
+public function addUser(Request $request, ManagerRegistry $doctrine )
 
 {
     $user = new User();
        $donnees = json_decode($request->getContent());
 
         $user->setEmail($donnees->email)
-
-                ->setRoles($donnees->role);
-
-            
+              ->setRoles($donnees->roles)
+              ->setPassword($this->passwordEncoder->encodePassword(
+                $user, $user->getPassword()));
+   
         $entityManager = $doctrine->getManager();
 
         $entityManager->persist($user);
