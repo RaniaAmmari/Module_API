@@ -23,14 +23,11 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use FOS\RestBundle\Controller\Annotations as Rest;
 
 
-/**
-* @Rest\Route("/api/article")
-*/
 
 class ApiPostController extends AbstractController
 {
     /**
-     *  @Rest\Get("/")
+     *  @Rest\Get("/article")
      */
     public function index(ArticleRepository $ArticleRepository , SerializerInterface $serializer)
     { 
@@ -39,7 +36,7 @@ class ApiPostController extends AbstractController
 
     }
     /**
-     * @Rest\Get("/{id}", name="app_api_article", requirements = {"id"="\d+"})
+     * @Rest\Get("/api/article/{id}", name="app_api_article", requirements = {"id"="\d+"})
      */
     public function articleId(ArticleRepository $ArticleRepository , SerializerInterface $serializer, int $id)
     
@@ -53,9 +50,45 @@ class ApiPostController extends AbstractController
            ], 404 );
         }
       
+    }  
+
+    /**
+     * @Rest\Post("/api/article")
+     */
+    public function addArticle(Request $request,ManagerRegistry $doctrine)
+
+    {
+            $article = new Article();
+        $donnees = json_decode($request->getContent());
+
+            $article->setTitle($donnees->title)
+
+                    ->setContent($donnees->content)
+
+                    ->setAutor($donnees->autor)
+
+                    ->setDate(new \DateTime());
+
+            $entityManager = $doctrine->getManager();
+
+            $entityManager->persist($article);
+
+            $entityManager->flush();
+
+            return $this->json($article,201,[]);
+
     }
+
 /**
- *  @Rest\Put("{?id}"}
+ *  @Rest\Get("api/article/trois")
+ */
+public function find(ArticleRepository $ArticleRepository)
+{
+    return   $this->json($ArticleRepository->findBylast(),200 ,[],['groups'=>'article']);
+
+}
+/**
+ *  @Rest\Put("api/article/{?id}")
  */
 public function editArticle( ?Article $article, Request $request ,ManagerRegistry $doctrine)
 {
@@ -67,7 +100,7 @@ public function editArticle( ?Article $article, Request $request ,ManagerRegistr
             $article = new Article();
             $code=200;
         }
-        {
+        
         $article->setTitle($donnees->title);
 
         $article->setContent($donnees->content);
@@ -80,48 +113,12 @@ public function editArticle( ?Article $article, Request $request ,ManagerRegistr
         $entityManager->persist($article);
         $entityManager->flush();
         return $this->json($article,201,[]);
-    } 
+    
 
 }
 
 /**
- * @POST("/api/article" name="app_post_user")
- */
-
-public function addArticle(Request $request,ManagerRegistry $doctrine)
-
-{
-        $article = new Article();
-       $donnees = json_decode($request->getContent());
-
-        $article->setTitle($donnees->title)
-
-                ->setContent($donnees->content)
-
-                ->setAutor($donnees->autor)
-
-                ->setDate(new \DateTime());
-
-        $entityManager = $doctrine->getManager();
-
-        $entityManager->persist($article);
-
-        $entityManager->flush();
-
-        return $this->json($article,201,[]);
-
-}
-
-/**
- *  @Rest\Get("/trois")
- */
-public function find(ArticleRepository $ArticleRepository)
-{
-    return   $this->json($ArticleRepository->findBylast(),200 ,[],['groups'=>'article']);
-
-}
-/**
- *@Rest\Delete("/{id}")
+ *@Rest\Delete("api/article/{id}")
  */
 public function remove(Article $article)
 {
