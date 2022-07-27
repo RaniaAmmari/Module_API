@@ -27,22 +27,24 @@ use FOS\RestBundle\Controller\Annotations as Rest;
 class ApiPostController extends AbstractController
 {
     /**
+     *  @Rest\View(serializerGroups={"article"})
      *  @Rest\Get("/article")
      */
     public function index(ArticleRepository $ArticleRepository , SerializerInterface $serializer)
     { 
 
-        return   $this->json($ArticleRepository->findAll(),200 ,[],['groups'=>'article']);
+        return $ArticleRepository->findAll();
 
     }
     /**
+     *  @Rest\View(serializerGroups={"article"})
      * @Rest\Get("/api/article/{id}", name="app_api_article", requirements = {"id"="\d+"})
      */
     public function articleId(ArticleRepository $ArticleRepository , SerializerInterface $serializer, int $id)
     
         {
            if ($ArticleRepository->find($id) == true){
-            return   $this->json($ArticleRepository->find($id), 200 ,[],['groups'=>'article']);
+            return   $ArticleRepository->find($id);
         } else {
            return $this->json ([
             'status' => 404,
@@ -53,71 +55,68 @@ class ApiPostController extends AbstractController
     }  
 
     /**
+     * @Rest\View(serializerGroups={"article"})
      * @Rest\Post("/api/article")
      */
-    public function addArticle(Request $request,ManagerRegistry $doctrine)
+    public function addArticle(Request $request,ManagerRegistry $doctrine,SerializerInterface $serializer)
 
     {
-            $article = new Article();
-        $donnees = json_decode($request->getContent());
-
-            $article->setTitle($donnees->title)
-
-                    ->setContent($donnees->content)
-
-                    ->setAutor($donnees->autor)
-
-                    ->setDate(new \DateTime());
-
-            $entityManager = $doctrine->getManager();
-
+        
+        try {
+            $article = $serializer->deserialize($request->getContent(),Article::class,'json');
+            $entityManager = $this->getDoctrine()->getManager();
             $entityManager->persist($article);
-
             $entityManager->flush();
-
-            return $this->json($article,201,[]);
+             return $this->json ([
+                'status' => 201,
+               'message'=> 'article cree'
+               ], 201 );
+        } catch (NotEncodableValueException $e) {
+            return $this->json(["error message"=>$e->getMessage()],400);
+        }
 
     }
 
 /**
+ *  @Rest\View(serializerGroups={"article"})
  *  @Rest\Get("api/article/trois")
  */
 public function find(ArticleRepository $ArticleRepository)
 {
-    return   $this->json($ArticleRepository->findBylast(),200 ,[],['groups'=>'article']);
+    return  $ArticleRepository->findBylast();
 
 }
 /**
- *  @Rest\Put("api/article/{?id}")
+ *  @Rest\View(serializerGroups={"article"})
+ *  @Rest\Put("api/article/{id?}")
  */
-public function editArticle( ?Article $article, Request $request ,ManagerRegistry $doctrine)
+public function editArticle( Article $article, Request $request ,ManagerRegistry $doctrine ,SerializerInterface $serializer,ArticleRepository $ArticleRepositor,$id=null):Response
 {
-    $donnees = json_decode($request->getContent());
+   
+        $content = $serializer->deserialize($request->getContent(),Article::class,'json');
 
-       
-    if(!$article)
-        {
-            $article = new Article();
-            $code=200;
+        if($id){
+            $article = $ArticleRepository->find($id);
+            if(!$article){
+                return $this->json(["error message" => "article not found"],404);
+            }
+            $article->setTitle($content->getTitle());
+            $article->setContent($content->getContent());
+            $article->setAutor($content->getAutor());
+            $article->setDate($content->getDate());
+            $entityManager = $this->getDoctrine()->getManager();
+            $entityManager->flush();
+            return $this->json($article,200);
         }
-        
-        $article->setTitle($donnees->title);
-
-        $article->setContent($donnees->content);
-
-        $article->setAutor($donnees->autor);
-
-        $article ->setDate(new \DateTime()); 
-
         $entityManager = $this->getDoctrine()->getManager();
-        $entityManager->persist($article);
+        $entityManager->persist($content);
         $entityManager->flush();
-        return $this->json($article,201,[]);
-    
+        return $this->json($content,201);
 
 }
 
 /**
+ *@Rest\View(serializerGroups={"article"})
  *@Rest\Delete("api/article/{id}")
  */
 public function remove(Article $article)
@@ -125,9 +124,9 @@ public function remove(Article $article)
     $entityManager = $this->getDoctrine()->getManager();
     $entityManager->remove($article);
     $entityManager->flush();
-    return $this->json($article,200,[],['groups'=>'article']); 
-}
+    return $this->json($article,200,[]);
 
+}
 }
 
 
