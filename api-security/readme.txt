@@ -14,7 +14,7 @@ openssl rsa -pubout -in config/jwt/private.pem -out config/jwt/public.pem
 pour ajouter un utilisateur dans la BD:
 @POST("/user)
 -----------
-pour acceder à tout les articles public: @GET  /api/article 
+pour acceder à tout les articles public: @GET  /article 
 pour acceder à un article  @GET  /api/article/{id}
 pour poster un article @POST  /api/article
 pour ajouter ou bien modifier @Put  /api/article/{id}
